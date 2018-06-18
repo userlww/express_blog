@@ -1,41 +1,30 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const path =require('path')
+const express =require('express')
+const session =require('express-session')
+const MongoStore = require('connect-mongo')(session)
+const flash =require('connect-flash')
+const config =require('config-lite')(_dirname)
+const routes =require('./routes')
+const pkg = require('./package')
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const app =express()
 
-var app = express();
+//设置模板目录
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+app.set('views',path.join(_dirname,'views'))
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+//设置模板引擎为ejs
+app.set('view engine','ejs')
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+//设置静态文件目录
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
+app.use(express.static(path.join(_dirname,'public')))
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
+//session 中间件
+app.use(session({
+    name:config.session.key,  //设置cookie中保存session id的字段名称
+    secret: config.session.secret //通过设置secret来计算hash值并放在cookie中，
+}))
 
-module.exports = app;
+
